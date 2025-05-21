@@ -29,7 +29,7 @@ def findById(id):
     return jsonify(foundCountry)
 
 # Create a new country
-@app.route('/countries', methods=['POST'])
+@app.route('/countries/<int:id>', methods=['PUT'])
 @cross_origin()
 def create():
     if not request.json:
@@ -76,4 +76,4 @@ def delete(id):
 
 
 if __name__ == '__main__' :
-    app.run(debug= True)
+    app.run()
