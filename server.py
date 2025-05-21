@@ -13,14 +13,14 @@ def index():
     return "Hello, World!"
 
 # Get all countries
-@app.route('/countries')
+@app.route('/countries', methods=['GET'])
 @cross_origin()
 def getAll():
     results = countryDAO.getAll()
     return jsonify(results)
 
 # Get a country by ID
-@app.route('/countries/<int:id>')
+@app.route('/countries/<int:id>', methods=['GET'])
 @cross_origin()
 def findById(id):
     foundCountry = countryDAO.findByID(id)
@@ -29,7 +29,8 @@ def findById(id):
     return jsonify(foundCountry)
 
 # Create a new country
-@app.route('/countries/<int:id>', methods=['PUT'])
+@app.route('/countries', methods=['POST'])
+@app.route('/countries/', methods=['POST'])
 @cross_origin()
 def create():
     if not request.json:
