@@ -74,7 +74,7 @@
 
         var country = {}
        
-        country.name = form.querySelector('input[name="country_name"]').value
+        country.country_name = form.querySelector('input[name="country_name"]').value;
         country.visit_date = form.querySelector('input[name="visit_date"]').value
         country.rating = form.querySelector('input[name="rating"]').value
         console.log(JSON.stringify(country))
@@ -105,11 +105,11 @@
         var cell1 = rowElement.insertCell(0);
         cell1.innerHTML = country.id
         var cell2 = rowElement.insertCell(1);
-        cell2.innerHTML = country.title
+        cell2.innerHTML = country.country_name;
         var cell3 = rowElement.insertCell(2);
-        cell3.innerHTML = country.author
+        cell3.innerHTML = country.visit_date;
         var cell4 = rowElement.insertCell(3);
-        cell4.innerHTML = country.price
+        cell4.innerHTML = country.rating;
         var cell5 = rowElement.insertCell(4);
         cell5.innerHTML = '<button onclick="showUpdate(this)">Update</button>'
         var cell6 = rowElement.insertCell(5);
@@ -153,7 +153,7 @@
         var country = {}
         country.id = form.querySelector('input[name="id"]').value
         country.country_name = form.querySelector('input[name="country_name"]').value
-        country.visit_date = form.querySelector('input[name="vivit_date"]').value
+        country.visit_date = form.querySelector('input[name="visit_date"]').value
         country.rating = parseInt(form.querySelector('input[name="rating"]').value,10)
         console.log(JSON.stringify(country))
         return country
