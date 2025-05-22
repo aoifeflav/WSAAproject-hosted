@@ -141,13 +141,13 @@
     function populateFormWithCountry(country){
         var form = document.getElementById('createUpdateForm')
         form.querySelector('input[name="id"]').disabled = true
-
         form.querySelector('input[name="id"]').value  = country.id
-        form.querySelector('input[name="country_name"]').value= country.country_name
-        form.querySelector('input[name="author"]').value= country.visit_date
-        form.querySelector('input[name="price"]').value= country.rating
+        form.querySelector('input[name="country_name"]').value = country.country_name
+        form.querySelector('input[name="visit_date"]').value = country.visit_date
+        form.querySelector('input[name="rating"]').value = country.rating
         return country
     }
+
     function getCountryFromForm(){
         var form = document.getElementById('createUpdateForm')
         var country = {}
