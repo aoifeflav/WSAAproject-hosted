@@ -1,242 +1,236 @@
 <html>
     <head>
-        <title> view Countries </title>
+        <title>View Countries</title>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-       
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     </head>
-    <body>
+    <body class="p-4">
         <h1>Countries</h1>
-        <div> <button id="showCreateButton" onclick="showCreate()">Create</button></div>
+        <h2 id="worldPercentage">You have visited 0% of the world</h2>
+        
+        <!-- Progress bar -->
+        <div class="progress mb-4" style="height: 25px;">
+            <div id="progressBar" class="progress-bar progress-bar-striped bg-success" 
+                 role="progressbar" style="width: 0%;" aria-valuenow="0" 
+                 aria-valuemin="0" aria-valuemax="100">0%</div>
+        </div>
+
+        <div><button id="showCreateButton" onclick="showCreate()" class="btn btn-primary">Create</button></div>
         <div>
             <table class="table" id="countryTable">
                 <tr>
-                        <th>id</th>
-                        <th>Country</th>
-                        <th>
-                            Date of Visit
-                        </th>
-                        <th>Rating</th>
-                        <th>Update</th>
-                        <th>Delete</th>
+                    <th>id</th>
+                    <th>Country</th>
+                    <th>Date of Visit</th>
+                    <th>Rating</th>
+                    <th>Update</th>
+                    <th>Delete</th>
                 </tr>
-                
             </table>
         </div>
-        <div id='createUpdateForm' style="display: none">
-                <h2><span id="createLabel">Create a</span> <span id="updateLabel">update</span> Country</h2>
-                <input type="hidden" name="id"/>
-                Name <input type="text" name="country_name" /><br/>
-                Date of Visit <input type="date" name="visit_date"/> <br/>
-                Rating <input type="number" name="rating"/> <br/>
-                <span><button id="doCreateButton" onclick="doCreate()">Create</button></span>
-                <span><button id="doUpdateButton" onclick="doUpdate()">Update</button></span>
+
+        <div id='createUpdateForm' style="display: none" class="mt-4">
+            <h2><span id="createLabel">Create a</span> <span id="updateLabel">Update</span> Country</h2>
+            <input type="hidden" name="id"/>
+            Name <input type="text" name="country_name" class="form-control mb-2" />
+            Date of Visit <input type="date" name="visit_date" class="form-control mb-2"/>
+            Rating <input type="number" name="rating" class="form-control mb-2"/>
+            <span><button id="doCreateButton" onclick="doCreate()" class="btn btn-success">Create</button></span>
+            <span><button id="doUpdateButton" onclick="doUpdate()" class="btn btn-warning">Update</button></span>
         </div>
+
+        <script>
+            function showCreate(){
+                document.getElementById('showCreateButton').style.display="none";
+                document.getElementById('countryTable').style.display="none";
+                document.getElementById('createUpdateForm').style.display="block";
+                document.getElementById('createLabel').style.display="inline";
+                document.getElementById('updateLabel').style.display="none";
+                document.getElementById('doCreateButton').style.display="block";
+                document.getElementById('doUpdateButton').style.display="none";
+            }
+
+            function showViewAll(){
+                document.getElementById('showCreateButton').style.display="block";
+                document.getElementById('countryTable').style.display="block";
+                document.getElementById('createUpdateForm').style.display="none";
+            }
+
+            function showUpdate(buttonElement){
+                document.getElementById('showCreateButton').style.display="none";
+                document.getElementById('countryTable').style.display="none";
+                document.getElementById('createUpdateForm').style.display="block";
+                document.getElementById('createLabel').style.display="none";
+                document.getElementById('updateLabel').style.display="inline";
+                document.getElementById('doCreateButton').style.display="none";
+                document.getElementById('doUpdateButton').style.display="block";
+
+                var rowElement = buttonElement.parentNode.parentNode;
+                var country = getCountryFromRow(rowElement);
+                populateFormWithCountry(country);
+            }
+
+            function doCreate(){
+                var form = document.getElementById('createUpdateForm');
+                var country = {};
+                country.country_name = form.querySelector('input[name="country_name"]').value;
+                country.visit_date = form.querySelector('input[name="visit_date"]').value;
+                country.rating = form.querySelector('input[name="rating"]').value;
+                createCountryAjax(country);
+            }
+
+            function doUpdate(){
+                var country = getCountryFromForm();
+                var rowElement = document.getElementById(country.id);
+                updateCountryAjax(country);
+                setCountryInRow(rowElement, country);
+                clearForm();
+                showViewAll();
+            }
+
+            function doDelete(r){
+                var tableElement = document.getElementById('countryTable');
+                var rowElement = r.parentNode.parentNode;
+                var index = rowElement.rowIndex;
+                deleteCountryAjax(rowElement.getAttribute("id"));
+                tableElement.deleteRow(index);
+                updateWorldProgress(); // refresh count after delete
+            }
+
+            function addCountryToTable(country){
+                var tableElement = document.getElementById('countryTable');
+                var rowElement = tableElement.insertRow(-1);
+                rowElement.setAttribute('id', country.id);
+
+                var cell1 = rowElement.insertCell(0); cell1.innerHTML = country.id;
+                var cell2 = rowElement.insertCell(1); cell2.innerHTML = country.country_name;
+                var cell3 = rowElement.insertCell(2); cell3.innerHTML = country.visit_date;
+                var cell4 = rowElement.insertCell(3); cell4.innerHTML = country.rating;
+                var cell5 = rowElement.insertCell(4); cell5.innerHTML = '<button onclick="showUpdate(this)" class="btn btn-warning">Update</button>';
+                var cell6 = rowElement.insertCell(5); cell6.innerHTML = '<button onclick="doDelete(this)" class="btn btn-danger">Delete</button>';
+            }
+
+            function clearForm(){
+                var form = document.getElementById('createUpdateForm');
+                form.querySelector('input[name="country_name"]').value = '';
+                form.querySelector('input[name="visit_date"]').value = '';
+                form.querySelector('input[name="rating"]').value = '';
+            }
+
+            function getCountryFromRow(rowElement){
+                var country = {};
+                country.id = rowElement.getAttribute('id');
+                country.country_name = rowElement.cells[1].innerText;
+                country.visit_date = rowElement.cells[2].innerText;
+                country.rating = parseInt(rowElement.cells[3].innerText, 10);
+                return country;
+            }
+
+            function setCountryInRow(rowElement, country){
+                rowElement.cells[0].innerText = country.id;
+                rowElement.cells[1].innerText = country.country_name;
+                rowElement.cells[2].innerText = country.visit_date;
+                rowElement.cells[3].innerText = country.rating;
+            }
+
+            function populateFormWithCountry(country){
+                var form = document.getElementById('createUpdateForm');
+                form.querySelector('input[name="id"]').disabled = true;
+                form.querySelector('input[name="id"]').value = country.id;
+                form.querySelector('input[name="country_name"]').value = country.country_name;
+                form.querySelector('input[name="visit_date"]').value = country.visit_date;
+                form.querySelector('input[name="rating"]').value = country.rating;
+                return country;
+            }
+
+            function getCountryFromForm(){
+                var form = document.getElementById('createUpdateForm');
+                var country = {};
+                country.id = form.querySelector('input[name="id"]').value;
+                country.country_name = form.querySelector('input[name="country_name"]').value;
+                country.visit_date = form.querySelector('input[name="visit_date"]').value;
+                country.rating = parseInt(form.querySelector('input[name="rating"]').value, 10);
+                return country;
+            }
+
+            function updateWorldProgress(count = null){
+                const total = 195;
+                const visited = count !== null ? count : document.querySelectorAll('#countryTable tr').length - 1;
+                const percent = ((visited / total) * 100).toFixed(1);
+                document.getElementById('worldPercentage').innerText = `You have visited ${percent}% of the world`;
+                const bar = document.getElementById('progressBar');
+                bar.style.width = percent + '%';
+                bar.innerText = percent + '%';
+                bar.setAttribute('aria-valuenow', percent);
+            }
+
+            function getAllAjax(){
+                $.ajax({
+                    "url": "/countries",
+                    "method": "GET",
+                    "dataType": "JSON",
+                    "success": function(result){
+                        for (country of result){
+                            addCountryToTable(country);
+                        }
+                        updateWorldProgress(result.length);
+                    },
+                    "error": function(xhr, status, error){
+                        console.log("error: " + status + " msg: " + error);
+                    }
+                });
+            }
+
+            function createCountryAjax(country){
+                $.ajax({
+                    "url": "/countries",
+                    "method": "POST",
+                    "data": JSON.stringify(country),
+                    "dataType": "JSON",
+                    contentType: "application/json; charset=utf-8",
+                    "success": function(result){
+                        country.id = result.id;
+                        addCountryToTable(country);
+                        clearForm();
+                        showViewAll();
+                        updateWorldProgress(); // update after add
+                    },
+                    "error": function(xhr, status, error){
+                        console.log("error: " + status + " msg: " + error);
+                    }
+                });
+            }
+
+            function updateCountryAjax(country){
+                $.ajax({
+                    "url": "/countries/" + encodeURI(country.id),
+                    "method": "PUT",
+                    "data": JSON.stringify(country),
+                    "dataType": "JSON",
+                    contentType: "application/json; charset=utf-8",
+                    "success": function(result){},
+                    "error": function(xhr, status, error){
+                        console.log("error: " + status + " msg: " + error);
+                    }
+                });
+            }
+
+            function deleteCountryAjax(id){
+                $.ajax({
+                    "url": "/countries/" + encodeURI(id),
+                    "method": "DELETE",
+                    "dataType": "JSON",
+                    contentType: "application/json; charset=utf-8",
+                    "success": function(result){
+                        updateWorldProgress(); // update after delete
+                    },
+                    "error": function(xhr, status, error){
+                        console.log("error: " + status + " msg: " + error);
+                    }
+                });
+            }
+
+            getAllAjax();
+        </script>
     </body>
-    <script>
-    function showCreate(){
-        document.getElementById('showCreateButton').style.display="none"
-        document.getElementById('countryTable').style.display="none"
-        document.getElementById('createUpdateForm').style.display="block"
-
-        document.getElementById('createLabel').style.display="inline"
-        document.getElementById('updateLabel').style.display="none"
-
-        document.getElementById('doCreateButton').style.display="block"
-        document.getElementById('doUpdateButton').style.display="none"
-
-    }
-    function showViewAll(){
-        document.getElementById('showCreateButton').style.display="block"
-        document.getElementById('countryTable').style.display="block"
-        document.getElementById('createUpdateForm').style.display="none"
-    }
-    function showUpdate(buttonElement){
-        document.getElementById('showCreateButton').style.display="none"
-        document.getElementById('countryTable').style.display="none"
-        document.getElementById('createUpdateForm').style.display="block"
-
-        document.getElementById('createLabel').style.display="none"
-        document.getElementById('updateLabel').style.display="inline"
-
-        document.getElementById('doCreateButton').style.display="none"
-        document.getElementById('doUpdateButton').style.display="block"
-
-
-        var rowElement = buttonElement.parentNode.parentNode
-        // these is a way of finding the closest <tr> which would safer, closest()
-        
-        var country = getCountryFromRow(rowElement)
-        populateFormWithCountry(country)
-    }
-    function doCreate(){
-        var form = document.getElementById('createUpdateForm')
-
-        var country = {}
-       
-        country.country_name = form.querySelector('input[name="country_name"]').value;
-        country.visit_date = form.querySelector('input[name="visit_date"]').value
-        country.rating = form.querySelector('input[name="rating"]').value
-        console.log(JSON.stringify(country))
-        createCountryAjax(country)
-        
-        
-    }
-    function doUpdate(){
-        var country = getCountryFromForm();
-        var rowElement = document.getElementById(country.id);
-        updateCountryAjax(country);
-        setCountryInRow(rowElement,country);
-       
-        clearForm();
-        showViewAll();
-    }
-    function doDelete(r){
-        var tableElement = document.getElementById('countryTable');
-        var rowElement = r.parentNode.parentNode;
-        var index = rowElement.rowIndex;
-        deleteCountryAjax(rowElement.getAttribute("id"));
-        tableElement.deleteRow(index);
-    }
-    function addCountryToTable(country){
-        var tableElement = document.getElementById('countryTable')
-        var rowElement = tableElement.insertRow(-1)
-        rowElement.setAttribute('id',country.id)
-        var cell1 = rowElement.insertCell(0);
-        cell1.innerHTML = country.id
-        var cell2 = rowElement.insertCell(1);
-        cell2.innerHTML = country.country_name;
-        var cell3 = rowElement.insertCell(2);
-        cell3.innerHTML = country.visit_date;
-        var cell4 = rowElement.insertCell(3);
-        cell4.innerHTML = country.rating;
-        var cell5 = rowElement.insertCell(4);
-        cell5.innerHTML = '<button onclick="showUpdate(this)">Update</button>'
-        var cell6 = rowElement.insertCell(5);
-        cell6.innerHTML = '<button onclick=doDelete(this)>delete</button>'
-
-    }
-
-    function clearForm(){
-        var form = document.getElementById('createUpdateForm')
-
-        form.querySelector('input[name="country_name"]').value=''
-        form.querySelector('input[name="visit_date"]').value=''
-        form.querySelector('input[name="rating"]').value=''
-    }
-    function getCountryFromRow(rowElement){
-        var car ={}
-        country.id  = rowElement.getAttribute('id')
-        country.country_name = rowElement.cells[1].firstChild.textContent
-        country.visit_date = rowElement.cells[2].firstChild.textContent
-        country.rating = parseInt(rowElement.cells[3].firstChild.textContent,10)
-        return country
-    }
-    function setCountryInRow(rowElement, country){
-        rowElement.cells[0].firstChild.textContent= country.id  
-        rowElement.cells[1].firstChild.textContent= country.country_name 
-        rowElement.cells[2].firstChild.textContent= country.visit_date
-        rowElement.cells[3].firstChild.textContent= country.rating
-    }
-    function populateFormWithCountry(country){
-        var form = document.getElementById('createUpdateForm')
-        form.querySelector('input[name="id"]').disabled = true
-        form.querySelector('input[name="id"]').value  = country.id
-        form.querySelector('input[name="country_name"]').value = country.country_name
-        form.querySelector('input[name="visit_date"]').value = country.visit_date
-        form.querySelector('input[name="rating"]').value = country.rating
-        return country
-    }
-
-    function getCountryFromForm(){
-        var form = document.getElementById('createUpdateForm')
-        var country = {}
-        country.id = form.querySelector('input[name="id"]').value
-        country.country_name = form.querySelector('input[name="country_name"]').value
-        country.visit_date = form.querySelector('input[name="visit_date"]').value
-        country.rating = parseInt(form.querySelector('input[name="rating"]').value,10)
-        console.log(JSON.stringify(country))
-        return country
-    }
-    function getAllAjax(){
-        $.ajax({
-            "url": "/countries",
-            "method":"GET",
-            "data":"",
-            "dataType": "JSON",
-            "success":function(result){
-                //console.log(result);
-                for (country of result){
-                    addCountryToTable(country);
-                }
-                
-            },
-            "error":function(xhr,status,error){
-                console.log("error: "+status+" msg:"+error);
-            }
-        });
-
-    }
-    function createCountryAjax(country){
-        //var country = {"country_name":"France", "visit_date":"2017-06-01","rating":7}
-        console.log(JSON.stringify(country));
-        $.ajax({
-            "url": "/countries",
-            "method":"POST",
-            "data":JSON.stringify(country),
-            "dataType": "JSON",
-            contentType: "application/json; charset=utf-8",
-            "success":function(result){
-                //console.log(result);
-                country.id = result.id
-                addCountryToTable(country)
-                clearForm()
-                showViewAll()
-            },
-            "error":function(xhr,status,error){
-                console.log("error: "+status+" msg:"+error);
-            }
-        });
-    }
-    function updateCountryAjax(country){
-        //var country = {"country_name":"France", "visit_date":"2017-06-01","rating":7}
-        console.log(JSON.stringify(country));
-        $.ajax({
-            "url": "/countries/"+encodeURI(country.id),
-            "method":"PUT",
-            "data":JSON.stringify(country),
-            "dataType": "JSON",
-            contentType: "   ; charset=utf-8",
-            "success":function(result){
-               // console.log(result);
-                  
-            },
-            "error":function(xhr,status,error){
-                console.log("error: "+status+" msg:"+error);
-            }
-        });
-    }
-    function deleteCountryAjax(id){
-        
-        //console.log(JSON.stringify('deleting '+id));
-        $.ajax({
-            "url": "/countries/"+encodeURI(id),
-            "method":"DELETE",
-            "data":"",
-            "dataType": "JSON",
-            contentType: "application/json; charset=utf-8",
-            "success":function(result){
-                //console.log(result);
-                  
-            },
-            "error":function(xhr,status,error){
-                console.log("error: "+status+" msg:"+error);
-            }
-        });
-    }
-    getAllAjax();
-  
-
-    
-    </script>
 </html>
