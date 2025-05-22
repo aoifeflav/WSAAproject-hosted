@@ -30,12 +30,10 @@ def findById(id):
 
 # Create a new country
 @app.route('/countries', methods=['POST'])
-@app.route('/countries/', methods=['POST'])
 @cross_origin()
 def create():
     if not request.json:
         abort(400)
-    # other checking 
     country = {
         "country_name": request.json.get('country_name'),
         "visit_date": request.json.get('visit_date'),
