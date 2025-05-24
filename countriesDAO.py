@@ -1,5 +1,5 @@
 # country dao 
-# data layer that connects to a datbase
+# data layer that connects to a database
 # Author: Aoife Flavin
 
 import mysql.connector
