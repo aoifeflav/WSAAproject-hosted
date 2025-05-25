@@ -10,11 +10,7 @@
         <h1>Countries</h1>
         <h2 id="worldPercentage">You have visited 0% of the world</h2>
         
-        <!-- Globe animation -->
-        <div id="globeViz" style="width: 600px; height: 600px; margin: auto;"></div>
-
-        <h2 id="worldPercentage" class="mt-4">You have visited 0% of the world</h2>
-
+        
         <!-- Progress bar -->
         <div class="progress mb-4" style="height: 25px;">
             <div id="progressBar" class="progress-bar progress-bar-striped bg-success" 
@@ -47,15 +43,6 @@
         </div>
 
         <script>
-            const world = Globe()
-                (document.getElementById('globeViz'))
-                .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-                .backgroundColor('rgba(0,0,0,0)')
-                .width(600)
-                .height(600)
-                .controls().autoRotate = true;
-            world.controls().autoRotateSpeed = 0.5;
-
 
             function showCreate(){
                 document.getElementById('showCreateButton').style.display="none";
@@ -248,6 +235,20 @@
             }
 
             getAllAjax();
+        </script>
+
+         <!-- 🌍 Animated Globe placed at the bottom -->
+        <div id="globeViz" style="width: 600px; height: 600px; margin: 40px auto;"></div>
+
+        <script>
+            const world = Globe()
+                (document.getElementById('globeViz'))
+                .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+                .backgroundColor('rgba(0,0,0,0)')
+                .width(600)
+                .height(600)
+                .controls().autoRotate = true;
+            world.controls().autoRotateSpeed = 0.5;
         </script>
     </body>
 </html>
